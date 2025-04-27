@@ -209,7 +209,7 @@ const Doctor = () => {
               <div className="flex items-end">
                 <button
                   onClick={handleDeleteFilter}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm flex items-center justify-center"
+                  className="w-full bg-[#06a3da] hover:bg-[#0589b7] text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm flex items-center justify-center"
                 >
                   <X className="mr-2" size={18} />
                   Xóa bộ lọc
@@ -361,7 +361,7 @@ const Doctor = () => {
                       className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
                         page === 1
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-[#06a3da] hover:bg-[#0589b7] text-white"
                       }`}
                     >
                       Trước
@@ -379,7 +379,7 @@ const Doctor = () => {
                           onClick={() => handlePageChange(pageNumber)}
                           className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
                             page === pageNumber
-                              ? "bg-blue-600 text-white"
+                              ? "bg-[#06a3da] hover:bg-[#0589b7] text-white"
                               : "bg-gray-200 text-gray-800 hover:bg-gray-300"
                           }`}
                         >
@@ -394,7 +394,7 @@ const Doctor = () => {
                       className={`px-4 py-2 rounded-lg font-semibold transition-all duration-300 ${
                         page === totalPages
                           ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-[#06a3da] hover:bg-[#0589b7] text-white"
                       }`}
                     >
                       Sau

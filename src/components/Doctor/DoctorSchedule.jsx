@@ -646,7 +646,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.2 }}
                       onClick={handleSubmit}
-                      className={`w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center`}
+                      className={`w-full bg-[#06a3da] hover:bg-[#0589b7] text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center`}
                       disabled={isFormDisabled || loadingStates.submitSchedule}
                     >
                       {loadingStates.submitSchedule ? (

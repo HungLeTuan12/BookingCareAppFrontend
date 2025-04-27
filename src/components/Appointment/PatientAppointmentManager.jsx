@@ -365,7 +365,7 @@ const PatientAppointmentManager = () => {
           {/* Tiêu đề trang */}
           <motion.div className="text-center mb-10" variants={childVariants}>
             <motion.h1
-              className="text-3xl sm:text-4xl font-bold text-gray-800"
+              className="text-3xl sm:text-4xl font-bold text-gray-800 uppercase"
               variants={childVariants}
             >
               Quản lý lịch hẹn
@@ -582,7 +582,6 @@ const PatientAppointmentManager = () => {
                               variants={childVariants}
                             >
                               <span className="text-gray-600 font-medium">
-                                projects/medical-appointment-system/src/pages/PatientAppointmentManager.js
                                 Giờ khám dự kiến:
                               </span>
                               <span className="text-gray-800">
@@ -814,24 +813,6 @@ const PatientAppointmentManager = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-
-                {/* Nút reset */}
-                {(formData.token || appointments.length > 0) && (
-                  <motion.div
-                    className="flex justify-end mt-8"
-                    variants={childVariants}
-                  >
-                    <motion.button
-                      onClick={resetForm}
-                      className="px-5 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold shadow-md"
-                      variants={childVariants}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Thoát
-                    </motion.button>
-                  </motion.div>
-                )}
               </>
             )}
           </motion.div>

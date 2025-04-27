@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion"; // Thêm Framer Motion
+import { motion } from "framer-motion";
+import { ToastContainer, toast } from "react-toastify";
+// Thêm Framer Motion
 import axios from "axios";
 import AnimatedPageWrapper, {
   childVariants,
@@ -65,7 +67,7 @@ export default function MedproLoginPage() {
       localStorage.clear();
       localStorage.setItem("patientToken", token);
       sessionStorage.setItem("patientToken", token);
-      toast.success("Chào mừng bạn đến với Bệnh viện Diệp Sinh !");
+      // toast.success("Chào mừng bạn đến với Bệnh viện Diệp Sinh !");
       const formattedDob = patientData.dob
         ? new Date(patientData.dob).toISOString().split("T")[0]
         : "";

@@ -222,13 +222,23 @@ const PatientBookingForm = () => {
       const response = await axios.get(
         `http://localhost:8080/api/v1/doctors/by-major/${majorId}`
       );
-      setDoctors(response.data || []);
+      const doctorData = response.data.data || response.data || [];
+      if (
+        !Array.isArray(doctorData) ||
+        !doctorData.every(
+          (doctor) => doctor.id && doctor.fullName && doctor.majorId
+        )
+      ) {
+        throw new Error("Dữ liệu bác sĩ không đúng định dạng!");
+      }
+      setDoctors(doctorData);
+
       setFormData((prev) => ({ ...prev, doctorId: "" }));
       setTimeSlots([]);
       setSelectedDate(new Date());
     } catch (error) {
       console.error("Lỗi khi lấy danh sách bác sĩ:", error);
-      toast.error("Có lỗi xảy ra khi lấy danh sách bác sĩ!");
+      // toast.error("Có lỗi xảy ra khi lấy danh sách bác sĩ!");
     }
   };
 
@@ -753,7 +763,7 @@ const PatientBookingForm = () => {
                     onClick={() => handleVisitedChoice(option.value)}
                     className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                       hasVisited === option.value
-                        ? "bg-blue-500 text-white border-blue-500"
+                        ? "bg-[#06a3da] hover:bg-[#0589b7] text-white border-blue-500"
                         : "bg-white text-black border-gray-300 hover:bg-gray-100"
                     }`}
                   >
@@ -794,7 +804,7 @@ const PatientBookingForm = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
                     onClick={handleVerifyPatientCode}
-                    className="px-6 py-3 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    className="px-6 py-3 bg-[#06a3da] hover:bg-[#0589b7] text-white text-sm rounded-lg  transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed"
                     style={{ width: "50%" }}
                     disabled={loadingStates.verifyPatient}
                   >
@@ -849,7 +859,7 @@ const PatientBookingForm = () => {
                       transition={{ duration: 0.5, delay: 0.2 }}
                       className="text-xl sm:text-2xl font-semibold text-gray-800 flex items-center"
                     >
-                      <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                      <span className="bg-[#06a3da] hover:bg-[#0589b7] text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
                         1
                       </span>
                       Thông tin cá nhân
@@ -860,7 +870,7 @@ const PatientBookingForm = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
                         onClick={() => setIsEditing(true)}
-                        className="flex items-center px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-300 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                        className="flex items-center px-3 py-1 bg-[#06a3da] hover:bg-[#0589b7] text-white rounded-lg  transition-all duration-300 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                       >
                         <Pencil className="mr-2" size={16} />
                         Chỉnh sửa
@@ -1046,12 +1056,12 @@ const PatientBookingForm = () => {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="text-xl sm:text-2xl font-semibold text-gray-800 flex items-center"
                   >
-                    <span className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
+                    <span className="bg-[#06a3da] hover:bg-[#0589b7] text-white rounded-full w-8 h-8 flex items-center justify-center mr-2">
                       2
                     </span>
                     Chọn lịch khám
                   </motion.h4>
-
+                  {/* Chọn đã từng khám hoặc chưa */}
                   <div className="mb-8">
                     <motion.h2
                       initial={{ opacity: 0, y: 20 }}
@@ -1076,7 +1086,7 @@ const PatientBookingForm = () => {
                           onClick={() => handleVisitedTypeBooking(option.value)}
                           className={`px-6 py-2 rounded-lg font-semibold transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
                             hasVisitedTypeBooking === option.value
-                              ? "bg-blue-500 text-white border-blue-500"
+                              ? "bg-[#06a3da] hover:bg-[#0589b7] text-white border-blue-500"
                               : "bg-white text-black border-gray-300 hover:bg-gray-100"
                           }`}
                         >
@@ -1088,6 +1098,7 @@ const PatientBookingForm = () => {
 
                   {hasVisitedTypeBooking === true && (
                     <>
+                      {/* fetch theo chuyên khoa */}
                       <div className="grid grid-cols-1 gap-6">
                         <motion.div
                           initial={{ opacity: 0, y: 20 }}
@@ -1119,7 +1130,7 @@ const PatientBookingForm = () => {
                           )}
                         </motion.div>
                       </div>
-
+                      {/* Ngày và khung giờ khám */}
                       <div className="mt-6">
                         <motion.label
                           initial={{ opacity: 0, y: 20 }}
@@ -1260,7 +1271,7 @@ const PatientBookingForm = () => {
                           </motion.p>
                         )}
                       </div>
-
+                      {/* Bác sĩ ứng với chuyên khoa */}
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -1351,8 +1362,8 @@ const PatientBookingForm = () => {
                                     transition={{ duration: 0.3 }}
                                     className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                                   >
-                                    {filteredDoctors.length > 0 ? (
-                                      filteredDoctors.map((doctor, index) => (
+                                    {filteredDoctors?.length > 0 ? (
+                                      filteredDoctors?.map((doctor, index) => (
                                         <motion.div
                                           key={doctor.id}
                                           custom={index}
@@ -1496,7 +1507,7 @@ const PatientBookingForm = () => {
                   </button>
                   <button
                     onClick={handleBookSchedule}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold flex items-center shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                    className="px-4 py-2 bg-[#06a3da] hover:bg-[#0589b7] text-white rounded-lg transition-all duration-300 font-semibold flex items-center shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:bg-blue-400 disabled:cursor-not-allowed"
                     disabled={isOtpSent || loadingStates.bookSchedule}
                   >
                     {loadingStates.bookSchedule ? (

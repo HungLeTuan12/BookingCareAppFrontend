@@ -156,15 +156,7 @@ const Navigation = () => {
                     Quản lý lịch hẹn
                   </a>
                 )}
-                <a
-                  onClick={() => {
-                    navigate("/profile");
-                    setShowDropdown(false);
-                  }}
-                  className="block px-4 py-3 text-gray-700 hover:bg-gray-100 cursor-pointer transition-all duration-200"
-                >
-                  Hồ sơ cá nhân
-                </a>
+
                 <a
                   onClick={handleLogout}
                   className="block px-4 py-3 text-red-600 hover:bg-gray-100 cursor-pointer transition-all duration-200 border-t"
