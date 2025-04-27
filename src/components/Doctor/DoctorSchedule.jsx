@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // Add React import
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
   CalendarDays,
@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Calendar,
   Filter,
+  ArrowRight,
 } from "lucide-react";
 import Header from "../Default/Header";
 import Navigation from "../Default/Navigation";
@@ -31,10 +32,10 @@ import {
   PointElement,
   LineElement,
 } from "chart.js";
-import { motion, AnimatePresence } from "framer-motion"; // Add Framer Motion
+import { motion, AnimatePresence } from "framer-motion";
 import AnimatedPageWrapper, {
   childVariants,
-} from "../Default/AnimatedPageWrapper"; // Import the wrapper and variants
+} from "../Default/AnimatedPageWrapper";
 import Layout from "../Default/Layout";
 
 ChartJS.register(
@@ -85,14 +86,14 @@ const DoctorScheduleForm = ({ doctorId }) => {
   doctorId = localStorage.getItem("userId");
 
   const hours = [
-    { id: 1, name: "7h - 8h" },
-    { id: 2, name: "8h - 9h" },
-    { id: 3, name: "9h - 10h" },
-    { id: 4, name: "10h - 11h" },
-    { id: 5, name: "13h - 14h" },
-    { id: 6, name: "14h - 15h" },
-    { id: 7, name: "15h - 16h" },
-    { id: 8, name: "16h - 17h" },
+    { id: 1, name: "7h - 8h", startHour: 7 },
+    { id: 2, name: "8h - 9h", startHour: 8 },
+    { id: 3, name: "9h - 10h", startHour: 9 },
+    { id: 4, name: "10h - 11h", startHour: 10 },
+    { id: 5, name: "13h - 14h", startHour: 13 },
+    { id: 6, name: "14h - 15h", startHour: 14 },
+    { id: 7, name: "15h - 16h", startHour: 15 },
+    { id: 8, name: "16h - 17h", startHour: 16 },
   ];
 
   function getMonday(date) {
@@ -240,12 +241,97 @@ const DoctorScheduleForm = ({ doctorId }) => {
     });
   };
 
+  // Hàm kiểm tra xem khung giờ có bị vô hiệu hóa hay không
+  const isHourDisabled = (slotId, selectedDate) => {
+    if (!selectedDate) return false;
+
+    const currentTime = new Date(); // Thời điểm hiện tại: 17h31 ngày 27/04/2025
+    const selectedDateTime = new Date(selectedDate);
+    const slot = hours.find((h) => h.id === slotId);
+    if (!slot) return false;
+
+    const slotStartTime = new Date(selectedDateTime);
+    slotStartTime.setHours(slot.startHour, 0, 0, 0);
+
+    return slotStartTime < currentTime;
+  };
+
+  // Hàm xử lý khi thay đổi ngày
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setSelectedDate(newDate);
+
+    // Làm mới selectedSlots: Chỉ giữ lại các khung giờ hợp lệ với ngày mới
+    const validSlots = selectedSlots.filter(
+      (slotId) => !isHourDisabled(slotId, newDate)
+    );
+    setSelectedSlots(validSlots);
+
+    // Nếu không còn khung giờ nào hợp lệ, thông báo cho người dùng
+    if (selectedSlots.length > 0 && validSlots.length === 0) {
+      toast.warn(
+        "Các khung giờ đã chọn không hợp lệ với ngày mới và đã bị xóa!"
+      );
+    }
+  };
+
+  // Hàm nhảy sang ngày tiếp theo
+  const goToNextDay = () => {
+    if (!selectedDate) return;
+
+    const currentDate = new Date(selectedDate);
+    const nextDate = new Date(currentDate);
+    nextDate.setDate(currentDate.getDate() + 1);
+
+    // Kiểm tra nếu ngày tiếp theo nhỏ hơn ngày tối thiểu (27/04/2025)
+    const minDate = new Date();
+    if (nextDate < minDate) {
+      toast.error("Không thể chọn ngày trong quá khứ!");
+      return;
+    }
+
+    const formattedNextDate = formatDateForAPI(nextDate);
+    setSelectedDate(formattedNextDate);
+
+    // Làm mới selectedSlots: Chỉ giữ lại các khung giờ hợp lệ với ngày mới
+    const validSlots = selectedSlots.filter(
+      (slotId) => !isHourDisabled(slotId, formattedNextDate)
+    );
+    setSelectedSlots(validSlots);
+
+    // Nếu không còn khung giờ nào hợp lệ, thông báo cho người dùng
+    if (selectedSlots.length > 0 && validSlots.length === 0) {
+      toast.warn(
+        "Các khung giờ đã chọn không hợp lệ với ngày mới và đã bị xóa!"
+      );
+    }
+  };
+
   const toggleSlot = (slotId) => {
+    if (isHourDisabled(slotId, selectedDate)) {
+      toast.error("Không thể chọn khung giờ đã qua!");
+      return;
+    }
+
     setSelectedSlots((prev) =>
       prev.includes(slotId)
         ? prev.filter((id) => id !== slotId)
         : [...prev, slotId]
     );
+  };
+
+  const handleSelectAll = () => {
+    const validSlots = hours
+      .filter((slot) => !isHourDisabled(slot.id, selectedDate))
+      .map((slot) => slot.id);
+
+    if (validSlots.length === 0) {
+      toast.error("Không có khung giờ nào hợp lệ để chọn!");
+      return;
+    }
+
+    setSelectedSlots(validSlots);
+    toast.success("Đã chọn tất cả khung giờ hợp lệ!");
   };
 
   const handleEditSchedule = (date, hourId) => {
@@ -413,7 +499,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     isEditing && (!selectedDate || selectedSlots.length === 0);
 
   useEffect(() => {
-    const today = new Date();
+    const today = new Date(); // Ngày hiện tại: 27/04/2025
     setSelectedDate(formatDateForAPI(today));
   }, []);
 
@@ -460,7 +546,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
 
   const isDateInPast = (dateString) => {
     const scheduleDate = new Date(dateString);
-    const today = new Date();
+    const today = new Date(); // Ngày hiện tại: 27/04/2025
     today.setHours(0, 0, 0, 0);
     return scheduleDate < today;
   };
@@ -601,44 +687,81 @@ const DoctorScheduleForm = ({ doctorId }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Chọn ngày làm việc <span className="text-red-600">*</span>
                   </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
-                    disabled={isFormDisabled || loadingStates.submitSchedule}
-                  />
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      onChange={handleDateChange}
+                      min={formatDateForAPI(new Date())} // Không cho phép chọn ngày trước 27/04/2025
+                      className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
+                      disabled={isFormDisabled || loadingStates.submitSchedule}
+                    />
+                    <button
+                      onClick={goToNextDay}
+                      className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed"
+                      disabled={isFormDisabled || loadingStates.submitSchedule}
+                      title="Ngày tiếp theo"
+                    >
+                      <ArrowRight size={20} />
+                    </button>
+                  </div>
 
                   <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">
                     Chọn khung giờ <span className="text-red-600">*</span>
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                    {hours.map((slot, index) => (
-                      <motion.button
-                        key={slot.id}
-                        custom={index}
-                        initial="hidden"
-                        animate="visible"
-                        variants={childVariants}
-                        type="button"
-                        onClick={() => toggleSlot(slot.id)}
-                        className={`text-sm px-3 py-2 border rounded-lg transition-all duration-300 font-medium shadow-sm ${
-                          selectedSlots.includes(slot.id)
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
-                        } ${
-                          isFormDisabled || loadingStates.submitSchedule
-                            ? "opacity-50 cursor-not-allowed"
-                            : ""
-                        }`}
-                        disabled={
-                          isFormDisabled || loadingStates.submitSchedule
-                        }
-                      >
-                        {slot.name}
-                      </motion.button>
-                    ))}
+                    {hours.map((slot, index) => {
+                      const disabled = isHourDisabled(slot.id, selectedDate);
+                      return (
+                        <motion.button
+                          key={slot.id}
+                          custom={index}
+                          initial="hidden"
+                          animate="visible"
+                          variants={childVariants}
+                          type="button"
+                          onClick={() => toggleSlot(slot.id)}
+                          className={`text-sm px-3 py_RA 2 border rounded-lg transition-all duration-300 font-medium shadow-sm relative group ${
+                            selectedSlots.includes(slot.id)
+                              ? "bg-blue-600 text-white border-blue-600"
+                              : disabled
+                              ? "bg-gray-200 text-gray-500 border-gray-300"
+                              : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+                          } ${
+                            disabled ||
+                            isFormDisabled ||
+                            loadingStates.submitSchedule
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
+                          disabled={
+                            disabled ||
+                            isFormDisabled ||
+                            loadingStates.submitSchedule
+                          }
+                        >
+                          {slot.name}
+                          {disabled && (
+                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                              Khung giờ đã qua
+                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
+                            </div>
+                          )}
+                        </motion.button>
+                      );
+                    })}
                   </div>
+                  {/* Thêm nút Chọn Tất Cả */}
+                  <motion.button
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    onClick={handleSelectAll}
+                    className={`w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed flex items-center justify-center mb-4`}
+                    disabled={isFormDisabled || loadingStates.submitSchedule}
+                  >
+                    Chọn tất cả khung giờ
+                  </motion.button>
 
                   <div className="flex gap-3">
                     <motion.button
@@ -794,7 +917,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                             <span className="inline-block w-5 h-5 bg-red-600 rounded-full ml-2"></span>
                                           )}
                                           {!isPastDate && (
-                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-:-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
                                               {schedule?.isBooked
                                                 ? "Lịch đã được đặt"
                                                 : "Nhấn để sửa lịch"}
@@ -908,7 +1031,10 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
-                    <div className="flex gap-3 items-center mt-8 sm:mt-0">
+                    <div
+                      className="flex gap-3 items-center mt-20 sm:mt-0"
+                      style={{ marginTop: "20px" }}
+                    >
                       <button
                         onClick={clearFilters}
                         className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"

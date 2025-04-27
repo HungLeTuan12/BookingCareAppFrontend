@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import { motion, AnimatePresence } from "framer-motion"; // Thêm Framer Motion
-import Layout from "../Default/Layout"; // Import Layout component
+import { motion, AnimatePresence } from "framer-motion";
+import Layout from "../Default/Layout";
 import {
   PlusCircle,
   Trash2,
@@ -18,7 +18,8 @@ import { vi } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import AnimatedPageWrapper, {
   childVariants,
-} from "../Default/AnimatedPageWrapper"; // Giả định bạn đã có AnimatedPageWrapper
+} from "../Default/AnimatedPageWrapper";
+import { toast } from "react-toastify"; // Đảm bảo đã import toast
 
 // Variants cho hiệu ứng fade-in và slide-in
 const containerVariants = {
@@ -28,7 +29,7 @@ const containerVariants = {
     y: 0,
     transition: {
       duration: 0.5,
-      staggerChildren: 0.1, // Các phần tử con sẽ xuất hiện lần lượt
+      staggerChildren: 0.1,
     },
   },
 };
@@ -62,7 +63,7 @@ const PatientAppointmentManager = () => {
   ];
 
   const patientToken = sessionStorage.getItem("patientToken");
-  const timeoutsRef = useRef({}); // Lưu trữ các timeout cho từng lịch hẹn
+  const timeoutsRef = useRef({});
 
   useEffect(() => {
     if (patientToken) {
@@ -77,7 +78,6 @@ const PatientAppointmentManager = () => {
     }
   }, [filterStatus, startDate, endDate]);
 
-  // Lên lịch gọi API updateStatusToSuccess sau 8 tiếng cho từng lịch hẹn
   useEffect(() => {
     Object.values(timeoutsRef.current).forEach(clearTimeout);
     timeoutsRef.current = {};
@@ -86,7 +86,7 @@ const PatientAppointmentManager = () => {
       if (appt.status === "CONFIRMING" && appt.createdAt) {
         const createdTime = new Date(appt.createdAt).getTime();
         const currentTime = new Date().getTime();
-        const eightHoursInMs = 8 * 60 * 60 * 1000; // 8 tiếng
+        const eightHoursInMs = 8 * 60 * 60 * 1000;
         const timeUntilEightHours = createdTime + eightHoursInMs - currentTime;
 
         if (timeUntilEightHours <= 0) {
@@ -105,13 +105,12 @@ const PatientAppointmentManager = () => {
     };
   }, [appointments]);
 
-  // Tự động cập nhật danh sách lịch hẹn mỗi 4 tiếng
   useEffect(() => {
     if (!patientToken) return;
 
     const intervalId = setInterval(() => {
       fetchAppointmentsByToken(patientToken);
-    }, 4 * 60 * 60 * 1000); // 4 tiếng
+    }, 4 * 60 * 60 * 1000);
 
     return () => clearInterval(intervalId);
   }, [patientToken]);
@@ -150,7 +149,7 @@ const PatientAppointmentManager = () => {
     const createdTime = new Date(createdAt).getTime();
     const currentTime = new Date().getTime();
     const timeDifference = currentTime - createdTime;
-    const eightHoursInMs = 8 * 60 * 60 * 1000; // 8 tiếng
+    const eightHoursInMs = 8 * 60 * 60 * 1000;
     return timeDifference <= eightHoursInMs;
   };
 
@@ -184,6 +183,7 @@ const PatientAppointmentManager = () => {
         ? response.data
         : [response.data];
       setAppointments(data);
+      console.log("res: ", response.data);
 
       localStorage.setItem("patientToken", token);
       sessionStorage.setItem("patientToken", token);
@@ -334,7 +334,7 @@ const PatientAppointmentManager = () => {
     if (!createdAt) return null;
 
     const createdTime = new Date(createdAt).getTime();
-    const cancelDeadline = createdTime + 8 * 60 * 60 * 1000; // 8 tiếng
+    const cancelDeadline = createdTime + 8 * 60 * 60 * 1000;
     const currentTime = new Date().getTime();
 
     const diff = cancelDeadline - currentTime;
@@ -353,9 +353,17 @@ const PatientAppointmentManager = () => {
     setEndDate(null);
   };
 
+  // Hàm định dạng phí khám
+  const formatFee = (fee) => {
+    if (fee === 0 || fee === null || fee === undefined) {
+      return "Miễn phí";
+    }
+    return `${fee.toLocaleString("vi-VN")}đ`;
+  };
+
   return (
     <Layout>
-      <AnimatedPageWrapper className="w-full min-h-screen bg-gray-50">
+      <AnimatedPageWrapper className="w-full min-h-screen bg-gray-100">
         <motion.div
           className="max-w-6xl mx-auto mt-16 px-4 sm:px-6 lg:px-8 py-12"
           variants={containerVariants}
@@ -365,17 +373,16 @@ const PatientAppointmentManager = () => {
           {/* Tiêu đề trang */}
           <motion.div className="text-center mb-10" variants={childVariants}>
             <motion.h1
-              className="text-3xl sm:text-4xl font-bold text-gray-800 uppercase"
+              className="text-3xl sm:text-4xl font-bold text-gray-800 uppercase border-b-2 border-[#06a3da] inline-block pb-2"
               variants={childVariants}
             >
-              Quản lý lịch hẹn
+              Quản Lý Lịch Hẹn
             </motion.h1>
             <motion.p
               className="text-gray-600 mt-3 text-lg"
               variants={childVariants}
             >
-              Tra cứu và quản lý các lịch hẹn khám bệnh của bạn một cách dễ
-              dàng.
+              Tra cứu và quản lý lịch hẹn khám bệnh của bạn một cách dễ dàng.
             </motion.p>
           </motion.div>
 
@@ -383,7 +390,6 @@ const PatientAppointmentManager = () => {
             className="bg-white p-6 sm:p-8 rounded-xl shadow-lg"
             variants={childVariants}
           >
-            {/* Kiểm tra đăng nhập */}
             {!patientToken ? (
               <motion.div
                 className="text-center py-12"
@@ -396,14 +402,14 @@ const PatientAppointmentManager = () => {
                   Vui lòng đăng nhập để xem danh sách lịch hẹn.
                 </motion.p>
                 <motion.button
-                  className="flex items-center mx-auto px-6 py-3 bg-[#06a3da] text-white rounded-lg hover:bg-[#0589b7] transition-all duration-300 font-semibold shadow-md"
+                  className="flex items-center mx-auto px-6 py-3 bg-[#06a3da] text-white rounded-lg hover:bg-[#0589b7] transition-all duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-[#06a3da]"
                   onClick={() => (window.location.href = "/login")}
                   variants={childVariants}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <LogIn className="mr-2" size={20} />
-                  Đăng nhập
+                  Đăng Nhập
                 </motion.button>
               </motion.div>
             ) : (
@@ -418,25 +424,26 @@ const PatientAppointmentManager = () => {
                       className="text-xl sm:text-2xl font-semibold text-gray-800"
                       variants={childVariants}
                     >
-                      Mã bệnh nhân:{" "}
+                      Mã Bệnh Nhân:{" "}
                       <span className="text-[#06a3da]">{formData.token}</span>
                     </motion.h2>
                     <motion.p
                       className="text-sm text-gray-500 mt-1"
                       variants={childVariants}
                     >
-                      Xem và quản lý tất cả lịch hẹn của bạn tại đây.
+                      Quản lý tất cả lịch hẹn của bạn tại đây.
                     </motion.p>
                   </motion.div>
                   <motion.button
-                    className="flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 font-semibold shadow-md"
+                    className="flex items-center px-6 py-3 bg-[#06a3da] text-white rounded-lg hover:bg-[#0589b7] transition-all duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-[#06a3da]"
                     onClick={() => navigate("/booking")}
                     variants={childVariants}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    title="Tạo lịch hẹn mới"
                   >
                     <PlusCircle className="mr-2" size={18} />
-                    Đặt lịch khám mới
+                    Đặt Lịch Mới
                   </motion.button>
                 </motion.div>
 
@@ -446,42 +453,36 @@ const PatientAppointmentManager = () => {
                   variants={childVariants}
                 >
                   <motion.div
-                    className="flex flex-col sm:flex-row gap-4 items-center"
+                    className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end"
                     variants={childVariants}
                   >
-                    <motion.div
-                      className="flex-1 w-full"
-                      variants={childVariants}
-                    >
+                    <motion.div variants={childVariants}>
                       <motion.label
                         className="text-gray-700 font-medium flex items-center mb-2"
                         variants={childVariants}
                       >
                         <Filter className="mr-2 w-5 h-5" />
-                        Lọc theo trạng thái:
+                        Trạng Thái:
                       </motion.label>
                       <motion.select
                         value={filterStatus}
                         onChange={handleFilterChange}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300 bg-white"
                         variants={childVariants}
                       >
-                        <option value="">Tất cả</option>
-                        <option value="CONFIRMING">Đang xác nhận</option>
-                        <option value="SUCCESS">Thành công</option>
-                        <option value="FAILURE">Đã hủy</option>
+                        <option value="">Tất Cả</option>
+                        <option value="CONFIRMING">Đang Xác Nhận</option>
+                        <option value="SUCCESS">Thành Công</option>
+                        <option value="FAILURE">Đã Hủy</option>
                       </motion.select>
                     </motion.div>
-                    <motion.div
-                      className="flex-1 w-full"
-                      variants={childVariants}
-                    >
+                    <motion.div variants={childVariants}>
                       <motion.label
                         className="text-gray-700 font-medium flex items-center mb-2"
                         variants={childVariants}
                       >
                         <Calendar className="mr-2 w-5 h-5" />
-                        Từ ngày:
+                        Từ Ngày:
                       </motion.label>
                       <DatePicker
                         selected={startDate}
@@ -489,19 +490,16 @@ const PatientAppointmentManager = () => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300 bg-white"
                       />
                     </motion.div>
-                    <motion.div
-                      className="flex-1 w-full"
-                      variants={childVariants}
-                    >
+                    <motion.div variants={childVariants}>
                       <motion.label
                         className="text-gray-700 font-medium flex items-center mb-2"
                         variants={childVariants}
                       >
                         <Calendar className="mr-2 w-5 h-5" />
-                        Đến ngày:
+                        Đến Ngày:
                       </motion.label>
                       <DatePicker
                         selected={endDate}
@@ -509,18 +507,19 @@ const PatientAppointmentManager = () => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300"
+                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300 bg-white"
                       />
                     </motion.div>
                     <motion.button
                       onClick={clearFilters}
-                      className="mt-8 sm:mt-0 flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
+                      className="flex items-center px-4 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold h-[48px] focus:outline-none focus:ring-2 focus:ring-gray-300"
                       variants={childVariants}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
+                      title="Xóa bộ lọc"
                     >
                       <X className="mr-2" size={18} />
-                      Xóa bộ lọc
+                      Xóa Bộ Lọc
                     </motion.button>
                   </motion.div>
                 </motion.div>
@@ -548,11 +547,11 @@ const PatientAppointmentManager = () => {
                         animate="visible"
                       >
                         <motion.div
-                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center"
                           variants={childVariants}
                         >
                           <motion.div
-                            className="space-y-3 w-full"
+                            className="space-y-3 col-span-2"
                             variants={childVariants}
                           >
                             <motion.div
@@ -560,7 +559,7 @@ const PatientAppointmentManager = () => {
                               variants={childVariants}
                             >
                               <span className="text-gray-600 font-medium">
-                                Bác sĩ:
+                                Bác Sĩ:
                               </span>
                               <span className="text-gray-800 font-semibold">
                                 {appt.user?.fullname || "N/A"}
@@ -571,7 +570,7 @@ const PatientAppointmentManager = () => {
                               variants={childVariants}
                             >
                               <span className="text-gray-600 font-medium">
-                                Ngày khám:
+                                Ngày Khám:
                               </span>
                               <span className="text-gray-800">
                                 {formatTimestampToDateTime(appt.date)}
@@ -582,7 +581,7 @@ const PatientAppointmentManager = () => {
                               variants={childVariants}
                             >
                               <span className="text-gray-600 font-medium">
-                                Giờ khám dự kiến:
+                                Giờ Khám:
                               </span>
                               <span className="text-gray-800">
                                 {getHourName(appt.idHour)}
@@ -593,7 +592,18 @@ const PatientAppointmentManager = () => {
                               variants={childVariants}
                             >
                               <span className="text-gray-600 font-medium">
-                                Trạng thái:
+                                Chi Phí Khám:
+                              </span>
+                              <span className="text-gray-800">
+                                {formatFee(appt.user.fee)}
+                              </span>
+                            </motion.div>
+                            <motion.div
+                              className="flex items-center space-x-2"
+                              variants={childVariants}
+                            >
+                              <span className="text-gray-600 font-medium">
+                                Trạng Thái:
                               </span>
                               <span
                                 className={`px-3 py-1 rounded-full text-sm font-semibold ${
@@ -607,11 +617,11 @@ const PatientAppointmentManager = () => {
                                 }`}
                               >
                                 {appt.status === "SUCCESS"
-                                  ? "Thành công"
+                                  ? "Thành Công"
                                   : appt.status === "CONFIRMING"
-                                  ? "Đang xác nhận"
+                                  ? "Đang Xác Nhận"
                                   : appt.status === "FAILURE"
-                                  ? "Đã hủy"
+                                  ? "Đã Hủy"
                                   : appt.status}
                               </span>
                             </motion.div>
@@ -621,15 +631,15 @@ const PatientAppointmentManager = () => {
                                 variants={childVariants}
                               >
                                 <span className="text-red-600 font-medium text-sm">
-                                  * Lưu ý: Bạn sẽ có 8 tiếng để hủy lịch hẹn,
-                                  nếu quá 8 tiếng kể từ lúc bạn đặt lịch, trạng
-                                  thái sẽ tự động chuyển thành "Thành công".
+                                  * Lưu ý: Bạn có 8 tiếng để hủy lịch hẹn, nếu
+                                  quá 8 tiếng trạng thái sẽ tự động chuyển thành
+                                  "Thành Công".
                                 </span>
                               </motion.div>
                             )}
                           </motion.div>
                           <motion.div
-                            className="flex space-x-3 w-full sm:w-auto"
+                            className="flex flex-col space-y-3 sm:items-end"
                             variants={childVariants}
                           >
                             {appt.status === "SUCCESS" && (
@@ -646,11 +656,12 @@ const PatientAppointmentManager = () => {
                                   onClick={() =>
                                     cancelBookingDirectly(appt.token)
                                   }
-                                  className="flex items-center px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-all duration-300 font-semibold shadow-md w-full sm:w-auto"
+                                  className="flex items-center justify-center px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full sm:w-auto"
                                   disabled={isLoading}
                                   variants={childVariants}
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
+                                  title="Hủy lịch hẹn này"
                                 >
                                   {isLoading &&
                                   selectedCancelToken === appt.token ? (
@@ -659,12 +670,12 @@ const PatientAppointmentManager = () => {
                                         className="animate-spin mr-2"
                                         size={18}
                                       />
-                                      Đang hủy...
+                                      Đang Hủy...
                                     </>
                                   ) : (
                                     <>
-                                      <X className="mr-2" size={18} />
-                                      Hủy
+                                      <Trash2 className="mr-2" size={18} />
+                                      Hủy Lịch
                                     </>
                                   )}
                                 </motion.button>
@@ -692,7 +703,7 @@ const PatientAppointmentManager = () => {
                                   variants={childVariants}
                                 >
                                   Đã quá thời gian hủy, trạng thái sẽ sớm chuyển
-                                  thành "Thành công".
+                                  thành "Thành Công".
                                 </motion.p>
                               )}
                           </motion.div>
@@ -712,14 +723,14 @@ const PatientAppointmentManager = () => {
                       Không tìm thấy lịch hẹn nào.
                     </motion.p>
                     <motion.button
-                      className="flex items-center mx-auto px-4 py-2 bg-[#06a3da] text-white rounded-lg hover:bg-[#0589b7] transition-all duration-300 font-semibold shadow-md"
+                      className="flex items-center mx-auto px-6 py-3 bg-[#06a3da] text-white rounded-lg hover:bg-[#0589b7] transition-all duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-[#06a3da]"
                       onClick={() => (window.location.href = "/booking")}
                       variants={childVariants}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
                       <PlusCircle className="mr-2" size={18} />
-                      Đặt lịch hẹn mới
+                      Đặt Lịch Hẹn Mới
                     </motion.button>
                   </motion.div>
                 )}
@@ -738,14 +749,14 @@ const PatientAppointmentManager = () => {
                         className="text-lg font-semibold text-gray-800 mb-4 text-center"
                         variants={childVariants}
                       >
-                        Xác minh OTP để hủy lịch hẹn
+                        Xác Minh OTP Để Hủy Lịch Hẹn
                       </motion.h2>
                       <motion.div
                         className="space-y-4"
                         variants={childVariants}
                       >
                         <motion.div
-                          className="flex gap-3"
+                          className="flex gap-3 items-center"
                           variants={childVariants}
                         >
                           <motion.input
@@ -753,13 +764,13 @@ const PatientAppointmentManager = () => {
                             name="cancelOtp"
                             value={formData.cancelOtp}
                             onChange={handleInputChange}
-                            className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300"
+                            className="flex-1 border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300 bg-white"
                             placeholder="Nhập mã OTP"
                             variants={childVariants}
                           />
                           <motion.button
                             onClick={verifyCancelOtpAndCancel}
-                            className="flex items-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-semibold shadow-md"
+                            className="flex items-center justify-center px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-semibold shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 w-[150px]"
                             disabled={isLoading}
                             variants={childVariants}
                             whileHover={{ scale: 1.05 }}
@@ -771,16 +782,16 @@ const PatientAppointmentManager = () => {
                                   className="animate-spin mr-2"
                                   size={20}
                                 />
-                                Đang xử lý...
+                                Đang Xử Lý...
                               </>
                             ) : (
-                              "Xác minh và hủy"
+                              "Xác Minh & Hủy"
                             )}
                           </motion.button>
                         </motion.div>
                         {errors.cancelOtp && (
                           <motion.p
-                            className="text-red-600 text-sm"
+                            className="text-red-600 text-sm text-center"
                             variants={childVariants}
                           >
                             {errors.cancelOtp}
@@ -800,12 +811,12 @@ const PatientAppointmentManager = () => {
                                 className="animate-spin mr-2"
                                 size={16}
                               />
-                              Đang gửi lại...
+                              Đang Gửi Lại...
                             </>
                           ) : (
                             <>
                               <RefreshCw className="mr-2" size={16} />
-                              Gửi lại OTP
+                              Gửi Lại OTP
                             </>
                           )}
                         </motion.button>

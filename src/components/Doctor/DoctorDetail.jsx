@@ -8,6 +8,13 @@ import AnimatedPageWrapper, {
   childVariants,
 } from "../Default/AnimatedPageWrapper"; // Giả định bạn đã có AnimatedPageWrapper
 
+// Hàm định dạng phí khám
+const formatFee = (fee) => {
+  if (fee === 0 || fee === null || fee === undefined) {
+    return "Miễn phí";
+  }
+  return `${fee.toLocaleString("vi-VN")}đ`;
+};
 // Variants cho hiệu ứng stagger
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -172,6 +179,19 @@ export default function DoctorProfile() {
                   {doctor.major.name}
                 </span>
               </motion.p>
+              <motion.p
+                className="text-gray-600 mt-2 text-lg"
+                variants={childVariants}
+              >
+                Giá khám:{" "}
+                <span className="font-semibold text-blue-600">
+                  {formatFee(doctor.fee)} -
+                  <span className="text-sm text-gray-600">
+                    (Chưa bao gồm chi phí chụp chiếu, xét nghiệm)
+                  </span>{" "}
+                </span>
+              </motion.p>
+
               <motion.div
                 className="flex items-center gap-2 mt-2"
                 variants={childVariants}

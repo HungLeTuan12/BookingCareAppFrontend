@@ -47,6 +47,8 @@ const DoctorList = () => {
         },
       });
       setDoctors(response.data.data);
+      console.log("Doctor: ", response.data.data);
+
       setTotalPages(response.data.data[0]?.totalPages || 1);
     } catch (error) {
       console.error("Error fetching doctors:", error);
@@ -76,6 +78,14 @@ const DoctorList = () => {
         toast.error("Không thể xóa bác sĩ!");
       }
     }
+  };
+
+  // Hàm định dạng phí khám
+  const formatFee = (fee) => {
+    if (fee === 0 || fee === null || fee === undefined) {
+      return "Miễn phí";
+    }
+    return `${fee.toLocaleString("vi-VN")}đ`;
   };
 
   return (
@@ -172,6 +182,9 @@ const DoctorList = () => {
                     Trạng thái
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Phí khám
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hành động
                   </th>
                 </tr>
@@ -215,6 +228,9 @@ const DoctorList = () => {
                             : "Đã nghỉ"}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-gray-600">
+                        {formatFee(doctor.fee)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <button
                           className="text-[#06a3da] hover:text-[#0589b7] mr-4 transition-all duration-300"
@@ -239,7 +255,7 @@ const DoctorList = () => {
                 ) : (
                   <tr>
                     <td
-                      colSpan="5"
+                      colSpan="6" // Cập nhật colSpan vì bảng có 6 cột
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       <p className="text-lg">Không tìm thấy bác sĩ nào.</p>

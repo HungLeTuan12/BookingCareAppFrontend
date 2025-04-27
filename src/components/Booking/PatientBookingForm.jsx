@@ -30,14 +30,14 @@ const PatientBookingForm = () => {
   const token = sessionStorage.getItem("patientToken");
 
   const hoursExist = [
-    { hourName: "7h - 8h" },
-    { hourName: "8h - 9h" },
-    { hourName: "9h - 10h" },
-    { hourName: "10h - 11h" },
-    { hourName: "13h - 14h" },
-    { hourName: "14h - 15h" },
-    { hourName: "15h - 16h" },
-    { hourName: "16h - 17h" },
+    { hourName: "7h - 8h", startHour: 7 },
+    { hourName: "8h - 9h", startHour: 8 },
+    { hourName: "9h - 10h", startHour: 9 },
+    { hourName: "10h - 11h", startHour: 10 },
+    { hourName: "13h - 14h", startHour: 13 },
+    { hourName: "14h - 15h", startHour: 14 },
+    { hourName: "15h - 16h", startHour: 15 },
+    { hourName: "16h - 17h", startHour: 16 },
   ];
 
   const [formData, setFormData] = useState({
@@ -232,13 +232,11 @@ const PatientBookingForm = () => {
         throw new Error("Dữ liệu bác sĩ không đúng định dạng!");
       }
       setDoctors(doctorData);
-
       setFormData((prev) => ({ ...prev, doctorId: "" }));
       setTimeSlots([]);
       setSelectedDate(new Date());
     } catch (error) {
       console.error("Lỗi khi lấy danh sách bác sĩ:", error);
-      // toast.error("Có lỗi xảy ra khi lấy danh sách bác sĩ!");
     }
   };
 
@@ -248,8 +246,6 @@ const PatientBookingForm = () => {
         "http://localhost:8080/api/v1/doctor/all"
       );
       const doctorData = response.data.data || [];
-      console.log("Doctor data: ", doctorData);
-
       if (
         !Array.isArray(doctorData) ||
         !doctorData.every(
@@ -275,6 +271,22 @@ const PatientBookingForm = () => {
     });
   };
 
+  // Hàm kiểm tra xem khung giờ có nằm trong quá khứ hay không
+  const isTimeSlotInPast = (slot) => {
+    const currentTime = new Date(); // Thời gian hiện tại
+    const slotDate = new Date(slot.date);
+    const hourName = slot.hourName;
+
+    // Tìm startHour từ hoursExist dựa trên hourName
+    const hourInfo = hoursExist.find((hour) => hour.hourName === hourName);
+    if (!hourInfo) return true; // Nếu không tìm thấy thông tin giờ, coi như đã qua
+
+    const slotStartHour = hourInfo.startHour;
+    slotDate.setHours(slotStartHour, 0, 0, 0); // Đặt giờ bắt đầu của khung giờ
+
+    return slotDate < currentTime; // Trả về true nếu khung giờ đã qua
+  };
+
   const fetchTimeSlotsByDoctor = async (doctorId) => {
     try {
       const startDate = new Date();
@@ -293,7 +305,11 @@ const PatientBookingForm = () => {
           },
         }
       );
-      setTimeSlots(response.data || []);
+      // Lọc các khung giờ đã qua
+      const filteredSlots = (response.data || []).filter(
+        (slot) => !isTimeSlotInPast(slot)
+      );
+      setTimeSlots(filteredSlots);
       setFormData((prev) => ({ ...prev, timeSlot: "" }));
     } catch (error) {
       console.error("Lỗi khi lấy khung giờ khả dụng:", error);
@@ -319,7 +335,11 @@ const PatientBookingForm = () => {
           },
         }
       );
-      setTimeSlotsMajor(response.data || []);
+      // Lọc các khung giờ đã qua
+      const filteredSlots = (response.data || []).filter(
+        (slot) => !isTimeSlotInPast(slot)
+      );
+      setTimeSlotsMajor(filteredSlots);
       setFormData((prev) => ({ ...prev, timeSlot: "" }));
     } catch (error) {
       console.error("Lỗi khi lấy khung giờ khả dụng:", error);
@@ -510,10 +530,10 @@ const PatientBookingForm = () => {
   };
 
   const handleCloseOtpModal = () => {
-    const confirmClose = window.confirm(
+    const confirmloor = window.confirm(
       "Bạn có chắc chắn muốn hủy xác minh OTP? Thao tác này sẽ hủy quá trình đặt lịch."
     );
-    if (confirmClose) {
+    if (confirmloor) {
       resetForm();
     }
   };
@@ -592,7 +612,7 @@ const PatientBookingForm = () => {
       const hasAvailableSlots = slots.some(
         (slot) => slot.date === formattedDate
       );
-      return !hasAvailableSlots;
+      return !hasAvailableSlots || date < new Date().setHours(0, 0, 0, 0);
     }
     return false;
   };
@@ -712,6 +732,14 @@ const PatientBookingForm = () => {
   const getMajorNameById = (majorId) => {
     const major = majors.find((m) => m.id === majorId);
     return major ? major.name : "Không xác định";
+  };
+
+  // Hàm định dạng phí khám
+  const formatFee = (fee) => {
+    if (fee === 0 || fee === null || fee === undefined) {
+      return "Miễn phí";
+    }
+    return `${fee.toLocaleString("vi-VN")}đ`;
   };
 
   return (
@@ -922,6 +950,7 @@ const PatientBookingForm = () => {
                           placeholder={field.placeholder}
                           className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm"
                           disabled={loadingStates.saveChanges}
+                          maxLength={60}
                         />
                         {errors[field.name] && (
                           <p className="text-red-600 text-xs mt-2 flex items-center">
@@ -1006,6 +1035,30 @@ const PatientBookingForm = () => {
                         placeholder="Mô tả ngắn gọn lý do khám bệnh (nếu có)"
                         disabled={loadingStates.saveChanges}
                       />
+                    </motion.div>
+                    <motion.div
+                      custom={6}
+                      initial="hidden"
+                      animate="visible"
+                      variants={childVariants}
+                      className="sm:col-span-2 bg-[#06a3da] text-white p-4 rounded"
+                    >
+                      <p className="font-bold">LƯU Ý</p>
+                      <p>
+                        Thông tin anh/chị cung cấp sẽ được sử dụng làm hồ sơ
+                        khám bệnh, khi điền thông tin anh/chị vui lòng:
+                      </p>
+                      <ul>
+                        <li className="ml-12 list-disc">
+                          Ghi rõ họ và tên, viết hoa những chữ cái đầu tiên, ví
+                          dụ: <span className="font-bold">Lê Tuấn Hưng </span>{" "}
+                        </li>
+                        <li className="ml-12 list-disc">
+                          Điền đầy đủ, đúng và vui lòng kiểm tra lại thông tin
+                          trước khi ấn{" "}
+                          <span className="font-bold">"Đặt lịch"</span>{" "}
+                        </li>
+                      </ul>
                     </motion.div>
 
                     {isEditing && (
@@ -1226,9 +1279,17 @@ const PatientBookingForm = () => {
                                                     : "bg-white border-gray-200 hover:bg-gray-100"
                                                 }`}
                                               >
-                                                <span className="font-medium">
-                                                  BS. {slot.doctorName}
-                                                </span>
+                                                <div className="flex flex-col">
+                                                  <span className="font-medium">
+                                                    BS. {slot.doctorName}
+                                                  </span>
+                                                  <span className="text-gray-500 text-xs">
+                                                    Phí khám:{" "}
+                                                    {formatFee(slot.fee)} - Chưa
+                                                    bao gồm chi phí chụp chiếu,
+                                                    xét nghiệm
+                                                  </span>
+                                                </div>
                                                 {formData.timeSlot ===
                                                   timeSlotValue && (
                                                   <span className="text-blue-500 text-xs font-semibold flex items-center">
@@ -1375,7 +1436,12 @@ const PatientBookingForm = () => {
                                           }
                                           className="p-3 hover:bg-blue-100 cursor-pointer transition-all duration-200 flex justify-between items-center"
                                         >
-                                          <span>{doctor.fullName}</span>
+                                          <div className="flex flex-col">
+                                            <span>{doctor.fullName}</span>
+                                            <span className="text-gray-500 text-sm">
+                                              Phí khám: {formatFee(doctor.fee)}{" "}
+                                            </span>
+                                          </div>
                                           <span className="text-gray-500 text-sm">
                                             {getMajorNameById(doctor.majorId)}
                                           </span>
@@ -1414,6 +1480,26 @@ const PatientBookingForm = () => {
                                 {errors.majorId}
                               </p>
                             )}
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block font-medium mb-2 text-gray-700">
+                              Phí khám:
+                            </label>
+                            <div className="w-full border p-3 rounded-lg bg-gray-100 text-gray-700 shadow-sm h-12 flex items-center">
+                              {formData.doctorId
+                                ? formatFee(
+                                    doctors.find(
+                                      (doctor) =>
+                                        doctor.id === formData.doctorId
+                                    )?.fee
+                                  )
+                                : "Chưa chọn bác sĩ"}
+                            </div>
+                            <span className="text-gray-500 text-xs">
+                              Chưa bao gồm chi phí chụp chiếu, xét nghiệm, phí
+                              đặt lịch là miễn phí
+                            </span>
                           </div>
 
                           <div>

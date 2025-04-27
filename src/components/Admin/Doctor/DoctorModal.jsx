@@ -15,6 +15,7 @@ const DoctorModal = ({ isOpen, onClose, onSuccess, doctor }) => {
     description: "",
     trangthai: "ACTIVE",
     majorId: "",
+    fee: 0, // Thêm trường fee với giá trị mặc định là 0
   });
   const [majors, setMajors] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -31,19 +32,21 @@ const DoctorModal = ({ isOpen, onClose, onSuccess, doctor }) => {
         description: doctor.description || "",
         phone: doctor.phone || "",
         email: doctor.email || "",
-        trangthai: "ACTIVE",
+        trangthai: "dl",
         majorId: doctor.major?.id || "",
+        fee: doctor.fee || 0, // Điền giá trị fee từ dữ liệu bác sĩ
       });
     } else {
       setDoctorData({
         fullName: "",
         userName: "",
-        description: "",
+        password: "",
         phone: "",
         email: "",
-        trangthai: "ACTIVE",
+        description: "",
+        trangthai: "dl",
         majorId: "",
-        password: "",
+        fee: 0, // Giá trị mặc định khi thêm mới
       });
     }
     setFile(null);
@@ -62,7 +65,20 @@ const DoctorModal = ({ isOpen, onClose, onSuccess, doctor }) => {
   // Xử lý thay đổi input
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setDoctorData((prev) => ({ ...prev, [name]: value }));
+    // Xử lý riêng cho trường fee để đảm bảo giá trị là số
+    if (name === "fee") {
+      const numericValue = value === "" ? 0 : parseFloat(value);
+      if (isNaN(numericValue) || numericValue < 0) {
+        setErrors((prev) => ({
+          ...prev,
+          fee: "Chi phí khám phải là số không âm!",
+        }));
+        return;
+      }
+      setDoctorData((prev) => ({ ...prev, fee: numericValue }));
+    } else {
+      setDoctorData((prev) => ({ ...prev, [name]: value }));
+    }
     setIsFormDirty(true);
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
@@ -90,6 +106,9 @@ const DoctorModal = ({ isOpen, onClose, onSuccess, doctor }) => {
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(doctorData.email)
     ) {
       newErrors.email = "Email không hợp lệ!";
+    }
+    if (doctorData.fee < 0) {
+      newErrors.fee = "Chi phí khám phải là số không âm!";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -296,6 +315,28 @@ const DoctorModal = ({ isOpen, onClose, onSuccess, doctor }) => {
               </select>
               {errors.majorId && (
                 <p className="text-red-500 text-sm mt-1">{errors.majorId}</p>
+              )}
+            </div>
+
+            {/* Chi phí khám (fee) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Chi phí khám (VNĐ)
+              </label>
+              <input
+                type="number"
+                name="fee"
+                value={doctorData.fee}
+                onChange={handleChange}
+                placeholder="Nhập chi phí khám"
+                min="0"
+                step="1000"
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#06a3da] transition-all duration-300 ${
+                  errors.fee ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.fee && (
+                <p className="text-red-500 text-sm mt-1">{errors.fee}</p>
               )}
             </div>
 
