@@ -18,6 +18,7 @@ import AnimatedPageWrapper, {
   childVariants,
 } from "../Default/AnimatedPageWrapper"; // Import the wrapper and variants
 import Layout from "../Default/Layout";
+import { useNavigate } from "react-router-dom";
 
 const PatientBookingForm = () => {
   const [majors, setMajors] = useState([]);
@@ -28,6 +29,7 @@ const PatientBookingForm = () => {
   const [searchDoctor, setSearchDoctor] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const token = sessionStorage.getItem("patientToken");
+  const navigate = useNavigate();
 
   const hoursExist = [
     { hourName: "7h - 8h", startHour: 7 },
@@ -229,6 +231,8 @@ const PatientBookingForm = () => {
           (doctor) => doctor.id && doctor.fullName && doctor.majorId
         )
       ) {
+        // toast.error("Vui lòng tải lại dữ liệu mới nhất !");
+        // navigate("/booking");
         throw new Error("Dữ liệu bác sĩ không đúng định dạng!");
       }
       setDoctors(doctorData);

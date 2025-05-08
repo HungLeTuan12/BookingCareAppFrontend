@@ -11,9 +11,6 @@ import {
   Filter,
   ArrowRight,
 } from "lucide-react";
-import Header from "../Default/Header";
-import Navigation from "../Default/Navigation";
-import Footer from "../Default/Footer";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import DatePicker from "react-datepicker";
