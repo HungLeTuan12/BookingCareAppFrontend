@@ -32,16 +32,23 @@ const PatientBookingForm = () => {
   const navigate = useNavigate();
 
   const hoursExist = [
-    { hourName: "7h - 8h", startHour: 7 },
-    { hourName: "8h - 9h", startHour: 8 },
-    { hourName: "9h - 10h", startHour: 9 },
-    { hourName: "10h - 11h", startHour: 10 },
-    { hourName: "13h - 14h", startHour: 13 },
-    { hourName: "14h - 15h", startHour: 14 },
-    { hourName: "15h - 16h", startHour: 15 },
-    { hourName: "16h - 17h", startHour: 16 },
+    { hourName: "7h - 7h30", startHour: 7 },
+    { hourName: "7h30 - 8h", startHour: 7 },
+    { hourName: "8h - 8h30", startHour: 8 },
+    { hourName: "8h30 - 9h", startHour: 8 },
+    { hourName: "9h - 9h30", startHour: 9 },
+    { hourName: "9h30 - 10h", startHour: 9 },
+    { hourName: "10h - 10h30", startHour: 10 },
+    { hourName: "10h30 - 11h", startHour: 10 },
+    { hourName: "13h - 13h30", startHour: 13 },
+    { hourName: "13h30 - 14h", startHour: 13 },
+    { hourName: "14h - 14h30", startHour: 14 },
+    { hourName: "14h30 - 15h", startHour: 14 },
+    { hourName: "15h - 15h30", startHour: 15 },
+    { hourName: "15h30 - 16h", startHour: 15 },
+    { hourName: "16h - 16h30", startHour: 16 },
+    { hourName: "16h30 - 17h", startHour: 16 },
   ];
-
   const [formData, setFormData] = useState({
     majorId: "",
     doctorId: "",
@@ -225,6 +232,7 @@ const PatientBookingForm = () => {
         `http://localhost:8080/api/v1/doctors/by-major/${majorId}`
       );
       const doctorData = response.data.data || response.data || [];
+      console.log("Doctor: " + response.data);
       if (
         !Array.isArray(doctorData) ||
         !doctorData.every(
@@ -277,18 +285,20 @@ const PatientBookingForm = () => {
 
   // Hàm kiểm tra xem khung giờ có nằm trong quá khứ hay không
   const isTimeSlotInPast = (slot) => {
-    const currentTime = new Date(); // Thời gian hiện tại
-    const slotDate = new Date(slot.date);
-    const hourName = slot.hourName;
-
-    // Tìm startHour từ hoursExist dựa trên hourName
-    const hourInfo = hoursExist.find((hour) => hour.hourName === hourName);
-    if (!hourInfo) return true; // Nếu không tìm thấy thông tin giờ, coi như đã qua
+    const currentTime = new Date(); // Thời gian hiện tại (11/05/2025)
+    const slotDate = new Date(slot.date); // Chuyển slot.date thành đối tượng Date (2025-05-12)
+    const hourInfo = hoursExist.find((hour) => hour.hourName === slot.hourName); // Sử dụng name để khớp với hoursExist
+    if (!hourInfo) {
+      console.log(`Không tìm thấy hourInfo cho hourName: ${slot.hourName}`); // Debug
+      return true; // Nếu không tìm thấy, coi như đã qua
+    }
 
     const slotStartHour = hourInfo.startHour;
-    slotDate.setHours(slotStartHour, 0, 0, 0); // Đặt giờ bắt đầu của khung giờ
+    // const slotStartMinute = hourInfo.startMinute;
+    slotDate.setHours(slotStartHour, 0, 0, 0); // Đặt giờ và phút chính xác
 
-    return slotDate < currentTime; // Trả về true nếu khung giờ đã qua
+    console.log(`SlotDate: ${slotDate}, CurrentTime: ${currentTime}`); // Debug
+    return slotDate < currentTime; // So sánh với thời gian hiện tại
   };
 
   const fetchTimeSlotsByDoctor = async (doctorId) => {
@@ -309,10 +319,11 @@ const PatientBookingForm = () => {
           },
         }
       );
-      // Lọc các khung giờ đã qua
+      console.log("Dữ liệu từ API:", response.data); // Thêm log này
       const filteredSlots = (response.data || []).filter(
         (slot) => !isTimeSlotInPast(slot)
       );
+      console.log("Dữ liệu sau khi lọc:", filteredSlots); // Thêm log này
       setTimeSlots(filteredSlots);
       setFormData((prev) => ({ ...prev, timeSlot: "" }));
     } catch (error) {

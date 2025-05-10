@@ -82,15 +82,24 @@ const DoctorScheduleForm = ({ doctorId }) => {
 
   doctorId = localStorage.getItem("userId");
 
+  // Cập nhật danh sách hours với khung giờ 30 phút
   const hours = [
-    { id: 1, name: "7h - 8h", startHour: 7 },
-    { id: 2, name: "8h - 9h", startHour: 8 },
-    { id: 3, name: "9h - 10h", startHour: 9 },
-    { id: 4, name: "10h - 11h", startHour: 10 },
-    { id: 5, name: "13h - 14h", startHour: 13 },
-    { id: 6, name: "14h - 15h", startHour: 14 },
-    { id: 7, name: "15h - 16h", startHour: 15 },
-    { id: 8, name: "16h - 17h", startHour: 16 },
+    { id: 1, name: "7h00 - 7h30", startHour: 7, startMinute: 0 },
+    { id: 2, name: "7h30 - 8h00", startHour: 7, startMinute: 30 },
+    { id: 3, name: "8h00 - 8h30", startHour: 8, startMinute: 0 },
+    { id: 4, name: "8h30 - 9h00", startHour: 8, startMinute: 30 },
+    { id: 5, name: "9h00 - 9h30", startHour: 9, startMinute: 0 },
+    { id: 6, name: "9h30 - 10h00", startHour: 9, startMinute: 30 },
+    { id: 7, name: "10h00 - 10h30", startHour: 10, startMinute: 0 },
+    { id: 8, name: "10h30 - 11h00", startHour: 10, startMinute: 30 },
+    { id: 9, name: "13h00 - 13h30", startHour: 13, startMinute: 0 },
+    { id: 10, name: "13h30 - 14h00", startHour: 13, startMinute: 30 },
+    { id: 11, name: "14h00 - 14h30", startHour: 14, startMinute: 0 },
+    { id: 12, name: "14h30 - 15h00", startHour: 14, startMinute: 30 },
+    { id: 13, name: "15h00 - 15h30", startHour: 15, startMinute: 0 },
+    { id: 14, name: "15h30 - 16h00", startHour: 15, startMinute: 30 },
+    { id: 15, name: "16h00 - 16h30", startHour: 16, startMinute: 0 },
+    { id: 16, name: "16h30 - 17h00", startHour: 16, startMinute: 30 },
   ];
 
   function getMonday(date) {
@@ -238,7 +247,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     });
   };
 
-  // Hàm kiểm tra xem khung giờ có bị vô hiệu hóa hay không
+  // Cập nhật hàm isHourDisabled với startMinute
   const isHourDisabled = (slotId, selectedDate) => {
     if (!selectedDate) return false;
 
@@ -248,7 +257,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     if (!slot) return false;
 
     const slotStartTime = new Date(selectedDateTime);
-    slotStartTime.setHours(slot.startHour, 0, 0, 0);
+    slotStartTime.setHours(slot.startHour, slot.startMinute, 0, 0);
 
     return slotStartTime < currentTime;
   };
@@ -668,6 +677,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
             {/* Schedule Tab */}
             {activeTab === "schedule" && (
               <div className="section flex flex-col lg:flex-row gap-6">
+                {/* Form Tạo/Sửa Lịch */}
                 <div className="w-full lg:w-1/3 bg-gray-50 p-6 rounded-2xl shadow-md">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -681,15 +691,16 @@ const DoctorScheduleForm = ({ doctorId }) => {
                     </h2>
                   </motion.div>
 
+                  {/* Chọn ngày */}
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Chọn ngày làm việc <span className="text-red-600">*</span>
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-4">
                     <input
                       type="date"
                       value={selectedDate}
                       onChange={handleDateChange}
-                      min={formatDateForAPI(new Date())} // Không cho phép chọn ngày trước 27/04/2025
+                      min={formatDateForAPI(new Date())}
                       className="w-full border p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 shadow-sm disabled:bg-gray-200 disabled:cursor-not-allowed"
                       disabled={isFormDisabled || loadingStates.submitSchedule}
                     />
@@ -703,70 +714,83 @@ const DoctorScheduleForm = ({ doctorId }) => {
                     </button>
                   </div>
 
-                  <label className="block text-sm font-medium text-gray-700 mt-4 mb-2">
+                  {/* Chọn khung giờ */}
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     Chọn khung giờ <span className="text-red-600">*</span>
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                    {hours.map((slot, index) => {
-                      const disabled = isHourDisabled(slot.id, selectedDate);
-                      return (
-                        <motion.button
-                          key={slot.id}
-                          custom={index}
-                          initial="hidden"
-                          animate="visible"
-                          variants={childVariants}
-                          type="button"
-                          onClick={() => toggleSlot(slot.id)}
-                          className={`text-sm px-3 py_RA 2 border rounded-lg transition-all duration-300 font-medium shadow-sm relative group ${
-                            selectedSlots.includes(slot.id)
-                              ? "bg-blue-600 text-white border-blue-600"
-                              : disabled
-                              ? "bg-gray-200 text-gray-500 border-gray-300"
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
-                          } ${
-                            disabled ||
-                            isFormDisabled ||
-                            loadingStates.submitSchedule
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          disabled={
-                            disabled ||
-                            isFormDisabled ||
-                            loadingStates.submitSchedule
-                          }
-                        >
-                          {slot.name}
-                          {disabled && (
-                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
-                              Khung giờ đã qua
-                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
-                            </div>
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                  <div
+                    className="max-h-64 overflow-y-auto border rounded-lg p-3 mb-4" // Điều chỉnh max-h-64 (16rem) để thay đổi chiều cao khung giờ
+                  >
+                    <div
+                      className="grid gap-2"
+                      style={{
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(100px, 1fr))", // Tự động điều chỉnh số cột, min 100px mỗi cột
+                      }}
+                    >
+                      {hours.map((slot, index) => {
+                        const disabled = isHourDisabled(slot.id, selectedDate);
+                        return (
+                          <motion.button
+                            key={slot.id}
+                            custom={index}
+                            initial="hidden"
+                            animate="visible"
+                            variants={childVariants}
+                            type="button"
+                            onClick={() => toggleSlot(slot.id)}
+                            className={`text-xs px-2 py-2 border rounded-lg transition-all duration-300 font-medium shadow-sm relative group ${
+                              selectedSlots.includes(slot.id)
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : disabled
+                                ? "bg-gray-200 text-gray-500 border-gray-300"
+                                : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+                            } ${
+                              disabled ||
+                              isFormDisabled ||
+                              loadingStates.submitSchedule
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            disabled={
+                              disabled ||
+                              isFormDisabled ||
+                              loadingStates.submitSchedule
+                            }
+                          >
+                            {slot.name}
+                            {disabled && (
+                              <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                                Khung giờ đã qua
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
+                              </div>
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {/* Thêm nút Chọn Tất Cả */}
+
+                  {/* Nút Chọn Tất Cả */}
                   <motion.button
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
                     onClick={handleSelectAll}
-                    className={`w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed flex items-center justify-center mb-4`}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed flex items-center justify-center mb-4"
                     disabled={isFormDisabled || loadingStates.submitSchedule}
                   >
                     Chọn tất cả khung giờ
                   </motion.button>
 
+                  {/* Nút Submit và Hủy */}
                   <div className="flex gap-3">
                     <motion.button
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: 0.2 }}
                       onClick={handleSubmit}
-                      className={`w-full bg-[#06a3da] hover:bg-[#0589b7] text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center`}
+                      className="w-full bg-[#06a3da] hover:bg-[#0589b7] text-white py-2 rounded-lg font-semibold transition-all duration-300 shadow-sm disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center"
                       disabled={isFormDisabled || loadingStates.submitSchedule}
                     >
                       {loadingStates.submitSchedule ? (
@@ -784,7 +808,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
                         onClick={handleCancelEdit}
-                        className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-3 rounded-lg font-semibold transition-all duration-300 shadow-sm"
+                        className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg font-semibold transition-all duration-300 shadow-sm"
                       >
                         Hủy
                       </motion.button>
@@ -792,22 +816,23 @@ const DoctorScheduleForm = ({ doctorId }) => {
                   </div>
                 </div>
 
+                {/* Bảng Lịch Làm Việc */}
                 <div className="w-full lg:w-2/3 bg-white p-6 rounded-2xl shadow-md">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="flex justify-between items-center mb-6"
+                    className="flex justify-between items-center mb-4"
                   >
                     <button
                       onClick={goToPreviousWeek}
                       className="p-2 rounded-full hover:bg-gray-100 transition-all duration-300"
                       disabled={loadingStates.fetchSchedule}
                     >
-                      <ChevronLeft size={24} />
+                      <ChevronLeft size={20} />
                     </button>
 
-                    <h2 className="text-xl font-semibold text-gray-800">
+                    <h2 className="text-lg font-semibold text-gray-800">
                       Lịch làm việc: {formatDateForDisplay(weekDates[0])} -{" "}
                       {formatDateForDisplay(weekDates[6])}
                     </h2>
@@ -817,39 +842,40 @@ const DoctorScheduleForm = ({ doctorId }) => {
                       className="p-2 rounded-full hover:bg-gray-100 transition-all duration-300"
                       disabled={loadingStates.fetchSchedule}
                     >
-                      <ChevronRight size={24} />
+                      <ChevronRight size={20} />
                     </button>
                   </motion.div>
 
                   {loadingStates.fetchSchedule ? (
-                    <div className="flex justify-center items-center py-10">
+                    <div className="flex justify-center items-center py-8">
                       <Loader2
                         className="animate-spin text-blue-600"
-                        size={32}
+                        size={28}
                       />
-                      <span className="ml-3 text-gray-600 text-lg">
+                      <span className="ml-3 text-gray-600 text-base">
                         Đang tải lịch làm việc...
                       </span>
                     </div>
                   ) : weekSchedule.length === 0 ? (
-                    <div className="text-center py-10">
-                      <p className="text-gray-500 text-lg">
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 text-base">
                         Không có lịch làm việc nào trong tuần này.
                       </p>
                     </div>
                   ) : (
                     <>
-                      <div className="overflow-x-auto">
+                      <div className="overflow-x-auto max-h-[70vh] border rounded-lg">
+                        {/* Điều chỉnh max-h-[70vh] để thay đổi chiều cao bảng lịch */}
                         <table className="min-w-full border-collapse">
                           <thead>
                             <tr>
-                              <th className="p-9 border bg-gray-50 text-gray-700 font-semibold text-left">
+                              <th className="p-2 border bg-gray-50 text-gray-700 font-semibold text-left text-xs sticky top-0 z-10">
                                 Giờ
                               </th>
                               {weekDates.map((date, index) => (
                                 <th
                                   key={date}
-                                  className="p-9 border bg-gray-50 text-gray-700 font-semibold min-w-[120px] text-center"
+                                  className="p-2 border bg-gray-50 text-gray-700 font-semibold min-w-[100px] text-center text-xs sticky top-0 z-10"
                                 >
                                   <div>{formatDateForDisplay(date)}</div>
                                 </th>
@@ -859,7 +885,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                           <tbody>
                             {hours.map((hour) => (
                               <tr key={hour.id} className="hover:bg-gray-50">
-                                <td className="p-4 border text-gray-700 font-medium">
+                                <td className="p-2 border text-gray-700 font-medium text-xs">
                                   {hour.name}
                                 </td>
                                 {weekDates.map((date) => {
@@ -880,7 +906,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                   return (
                                     <td
                                       key={`${date}-${hour.id}`}
-                                      className={`p-4 border text-center relative group ${
+                                      className={`p-2 border text-center relative group min-w-[100px] ${
                                         isSlotBooked ? "bg-blue-50" : "bg-white"
                                       } ${
                                         isEditingThisCell ? "bg-yellow-100" : ""
@@ -909,23 +935,23 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                     >
                                       {isSlotBooked ? (
                                         <>
-                                          <span className="inline-block w-5 h-5 bg-blue-600 rounded-full"></span>
+                                          <span className="inline-block w-4 h-4 bg-blue-600 rounded-full"></span>
                                           {schedule?.isBooked && (
-                                            <span className="inline-block w-5 h-5 bg-red-600 rounded-full ml-2"></span>
+                                            <span className="inline-block w-4 h-4 bg-red-600 rounded-full ml-1"></span>
                                           )}
                                           {!isPastDate && (
-                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-:-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
                                               {schedule?.isBooked
                                                 ? "Lịch đã được đặt"
                                                 : "Nhấn để sửa lịch"}
-                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
+                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-gray-800"></div>
                                             </div>
                                           )}
                                           {isPastDate && (
-                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
+                                            <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded-lg py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10">
                                               Không thể chỉnh sửa lịch trong quá
                                               khứ
-                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-8 border-x-transparent border-t-8 border-t-gray-800"></div>
+                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-gray-800"></div>
                                             </div>
                                           )}
                                         </>
@@ -947,9 +973,9 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="mt-4 flex items-center text-sm text-gray-600"
                       >
-                        <span className="inline-block w-5 h-5 bg-blue-600 rounded-full mr-2"></span>
+                        <span className="inline-block w-4 h-4 bg-blue-600 rounded-full mr-2"></span>
                         <span>Đã lên lịch</span>
-                        <span className="inline-block w-5 h-5 bg-red-600 rounded-full mr-2 ml-4"></span>
+                        <span className="inline-block w-4 h-4 bg-red-600 rounded-full mr-2 ml-4"></span>
                         <span>Đã được đặt</span>
                       </motion.div>
                     </>
@@ -970,9 +996,9 @@ const DoctorScheduleForm = ({ doctorId }) => {
                   Quản lý lịch hẹn
                 </motion.h2>
 
-                <div className="mb-8 bg-gray-50 p-6 rounded-lg shadow-sm">
-                  <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <div className="flex-1 w-full">
+                <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         <Filter className="mr-2 w-5 h-5" />
                         Lọc theo trạng thái:
@@ -980,7 +1006,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                       <select
                         value={filterStatus}
                         onChange={handleFilterChange}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       >
                         <option value="">Tất cả</option>
                         <option value="PENDING">Đang chờ xác nhận</option>
@@ -988,7 +1014,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         <option value="FAILURE">Đã hủy</option>
                       </select>
                     </div>
-                    <div className="flex-1 w-full">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         <Calendar className="mr-2 w-5 h-5" />
                         Từ ngày:
@@ -999,10 +1025,10 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
-                    <div className="flex-1 w-full">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         <Calendar className="mr-2 w-5 h-5" />
                         Đến ngày:
@@ -1013,10 +1039,10 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
-                    <div className="flex-1 w-full">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         Tìm kiếm:
                       </label>
@@ -1025,31 +1051,28 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Tìm theo tên, số điện thoại, email..."
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
-                    <div
-                      className="flex gap-3 items-center mt-20 sm:mt-0"
-                      style={{ marginTop: "20px" }}
-                    >
+                    <div className="flex gap-2">
                       <button
                         onClick={clearFilters}
-                        className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
+                        className="flex items-center px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
                       >
-                        <X className="mr-2" size={18} />
+                        <X className="mr-2" size={16} />
                         Xóa bộ lọc
                       </button>
                       {filterStatus === "SUCCESS" && (
                         <button
                           onClick={handleSendReminders}
-                          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold disabled:bg-blue-400 disabled:cursor-not-allowed"
+                          className="flex items-center px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-300 font-semibold disabled:bg-blue-400 disabled:cursor-not-allowed"
                           disabled={loadingStates.sendReminders}
                         >
                           {loadingStates.sendReminders ? (
                             <>
                               <Loader2
                                 className="mr-2 animate-spin"
-                                size={18}
+                                size={16}
                               />
                               Đang gửi...
                             </>
@@ -1077,9 +1100,9 @@ const DoctorScheduleForm = ({ doctorId }) => {
                 </div>
 
                 {loadingStates.fetchBookings ? (
-                  <div className="flex justify-center items-center py-10">
-                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                    <span className="ml-3 text-gray-600 text-lg">
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="animate-spin text-blue-600" size={28} />
+                    <span className="ml-3 text-gray-600 text-base">
                       Đang tải danh sách lịch hẹn...
                     </span>
                   </div>
@@ -1092,43 +1115,43 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         initial="hidden"
                         animate="visible"
                         variants={childVariants}
-                        className="bg-gray-50 p-4 sm:p-6 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-gray-200"
+                        className="bg-gray-50 p-4 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border border-gray-200"
                       >
-                        <div className="text-gray-700">
-                          <p className="text-sm sm:text-base">
+                        <div className="text-gray-700 text-sm">
+                          <p>
                             <strong className="font-semibold">
                               Bệnh nhân:
                             </strong>{" "}
                             {booking.fullName}
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">
                               Số điện thoại:
                             </strong>{" "}
                             {booking.phone}
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">Email:</strong>{" "}
                             {booking.email}
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">
                               Ngày khám:
                             </strong>{" "}
                             {formatTimestampToDate(booking.date)}
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">
                               Khung giờ:
                             </strong>{" "}
                             {getHourName(booking.idHour)}
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">
                               Trạng thái:
                             </strong>{" "}
                             <span
-                              className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                              className={`px-2 py-1 rounded-full text-xs font-semibold ${
                                 booking.status === "SUCCESS"
                                   ? "bg-green-100 text-green-700"
                                   : booking.status === "FAILURE"
@@ -1147,19 +1170,19 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                 : booking.status}
                             </span>
                           </p>
-                          <p className="text-sm sm:text-base">
+                          <p>
                             <strong className="font-semibold">
                               Lý do khám bệnh:
                             </strong>{" "}
                             {booking.note || "Không có ghi chú"}
                           </p>
                         </div>
-                        <div className="flex gap-3 w-full sm:w-auto">
+                        <div className="flex gap-2 w-full sm:w-auto">
                           {booking.status === "PENDING" && (
                             <>
                               <button
                                 onClick={() => handleApprove(booking.id)}
-                                className="flex-1 sm:flex-none px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-green-400 disabled:cursor-not-allowed"
                                 disabled={
                                   loadingStates.approveBooking === booking.id
                                 }
@@ -1168,7 +1191,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                   <>
                                     <Loader2
                                       className="mr-2 animate-spin"
-                                      size={18}
+                                      size={16}
                                     />
                                     Đang xử lý...
                                   </>
@@ -1178,7 +1201,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                               </button>
                               <button
                                 onClick={() => handleReject(booking.id)}
-                                className="flex-1 sm:flex-none px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-red-400 disabled:cursor-not-allowed"
+                                className="flex-1 sm:flex-none px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-300 font-semibold flex items-center justify-center shadow-sm disabled:bg-red-400 disabled:cursor-not-allowed"
                                 disabled={
                                   loadingStates.rejectBooking === booking.id
                                 }
@@ -1187,7 +1210,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
                                   <>
                                     <Loader2
                                       className="mr-2 animate-spin"
-                                      size={18}
+                                      size={16}
                                     />
                                     Đang xử lý...
                                   </>
@@ -1202,8 +1225,8 @@ const DoctorScheduleForm = ({ doctorId }) => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500 text-lg">
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-base">
                       Không có lịch hẹn nào phù hợp với bộ lọc.
                     </p>
                   </div>
@@ -1223,9 +1246,9 @@ const DoctorScheduleForm = ({ doctorId }) => {
                   Thống kê lịch làm việc và lịch hẹn
                 </motion.h2>
 
-                <div className="mb-8 bg-gray-50 p-6 rounded-lg shadow-sm">
-                  <div className="flex flex-col sm:flex-row gap-4 items-center">
-                    <div className="flex-1 w-full">
+                <div className="mb-6 bg-gray-50 p-4 rounded-lg shadow-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         <Calendar className="mr-2 w-5 h-5" />
                         Từ ngày:
@@ -1236,10 +1259,10 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
-                    <div className="flex-1 w-full">
+                    <div>
                       <label className="text-gray-700 font-medium flex items-center mb-2">
                         <Calendar className="mr-2 w-5 h-5" />
                         Đến ngày:
@@ -1250,28 +1273,28 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         dateFormat="dd/MM/yyyy"
                         placeholderText="Chọn ngày"
                         locale={vi}
-                        className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                        className="w-full border border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                       />
                     </div>
                     <button
                       onClick={clearFilters}
-                      className="mt-8 sm:mt-0 flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
+                      className="flex items-center px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 font-semibold"
                     >
-                      <X className="mr-2" size={18} />
+                      <X className="mr-2" size={16} />
                       Xóa bộ lọc
                     </button>
                   </div>
                 </div>
 
                 {loadingStates.fetchStatistics ? (
-                  <div className="flex justify-center items-center py-10">
-                    <Loader2 className="animate-spin text-blue-600" size={32} />
-                    <span className="ml-3 text-gray-600 text-lg">
+                  <div className="flex justify-center items-center py-8">
+                    <Loader2 className="animate-spin text-blue-600" size={28} />
+                    <span className="ml-3 text-gray-600 text-base">
                       Đang tải dữ liệu thống kê...
                     </span>
                   </div>
                 ) : statistics ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {[
                       {
                         title: "Số lượng lịch hẹn theo trạng thái",
@@ -1372,16 +1395,17 @@ const DoctorScheduleForm = ({ doctorId }) => {
                         variants={childVariants}
                         className="bg-gray-50 p-4 rounded-lg shadow-md"
                       >
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                        <h3 className="text-base font-semibold text-gray-800 mb-3">
                           {item.title}
                         </h3>
-                        <div className="h-64">{item.chart}</div>
+                        <div className="h-52">{item.chart}</div>{" "}
+                        {/* Điều chỉnh h-52 để thay đổi chiều cao biểu đồ */}
                       </motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-10">
-                    <p className="text-gray-500 text-lg">
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-base">
                       Không có dữ liệu thống kê.
                     </p>
                   </div>

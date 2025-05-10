@@ -168,8 +168,8 @@ const Specialty = () => {
                 />
               </div>
               <h3
-                onClick={() => navigate(specialty.path)}
-                className="text-[#06a3da] font-semibold text-lg mt-4 cursor-pointer hover:underline"
+                // onClick={() => navigate(specialty.path)}
+                className="text-[#06a3da] font-semibold text-lg mt-4"
               >
                 {specialty.name}
               </h3>
