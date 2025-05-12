@@ -29,7 +29,7 @@ const Header = () => {
           >
             <Phone className="w-5 h-5" />
             <span className="text-sm sm:text-base font-medium">
-              +0942 873 795
+              +0942 873 7955
             </span>
           </a>
         </div>
