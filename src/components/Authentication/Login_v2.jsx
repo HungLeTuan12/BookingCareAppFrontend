@@ -87,7 +87,9 @@ export default function MedproLoginPage() {
       navigate("/");
     } catch (error) {
       console.error("Lỗi khi xác minh mã số bệnh nhân:", error);
-      toast.error(error.response?.data || "Mã số bệnh nhân không hợp lệ!");
+      alert("Mã số bệnh nhân không hợp lệ !");
+      setFormData({ token: "" });
+      // toast.error("Mã số bệnh nhân không hợp lệ!");
     }
   };
 
@@ -190,6 +192,9 @@ export default function MedproLoginPage() {
 
           {/* Social login buttons */}
           <motion.div className="space-y-3" variants={childVariants}>
+            <p className="text-[red] text-sm text-center">
+              Nếu là bệnh nhân, vui lòng không chọn nút bên dưới.
+            </p>
             <motion.button
               onClick={() => navigate("/login")}
               className="w-full bg-red-500 text-white py-3 rounded-md flex justify-center items-center font-medium"
