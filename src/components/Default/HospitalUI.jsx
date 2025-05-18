@@ -206,9 +206,7 @@ const HospitalUI = () => {
           src="../src/assets/img/banner/26.3_cover(1920x626).5b4c0be4.jpg"
           alt="Event Banner"
           className="w-full h-full object-cover"
-          onError={(e) =>
-            (e.target.src = "https://via.placeholder.com/1920x626")
-          }
+          
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 to-black/70"></div>
         <div className="absolute text-center text-white px-4 py-8">
