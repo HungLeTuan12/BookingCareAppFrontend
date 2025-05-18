@@ -218,7 +218,7 @@ export default function MedproLoginPage() {
         <div className="h-full relative">
           <div className="h-full w-full bg-cover bg-center bg-no-repeat">
             <motion.img
-              src="src/assets/img/banner/banner.jpg"
+              src="../src/assets/img/banner/banner.jpg"
               alt="Woman using mobile app"
               className="h-full w-full object-cover"
               initial={{ opacity: 0 }}
