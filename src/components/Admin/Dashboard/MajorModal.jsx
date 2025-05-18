@@ -70,15 +70,19 @@ const MajorModal = ({ isOpen, onClose, onSuccess, major }) => {
 
       if (isEditMode) {
         await axios.put(
-          `http://localhost:8080/api/v1/major/${major.id}`,
+          `${import.meta.env.VITE_API_URL}/api/v1/major/${major.id}`,
           formData,
           { headers: { "Content-Type": "multipart/form-data" } }
         );
         toast.success("Chỉnh sửa thành công!");
       } else {
-        await axios.post("http://localhost:8080/api/v1/major", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/v1/major`,
+          formData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         toast.success("Thêm mới thành công!");
       }
 

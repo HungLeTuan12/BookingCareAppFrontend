@@ -23,7 +23,9 @@ const Specialty = () => {
 
   const fetchSpecialties = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/majors");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/majors`
+      );
       const data = response.data.data || [];
       const formattedSpecialties = data.map((specialty) => ({
         icon: specialty.image || "https://via.placeholder.com/80",

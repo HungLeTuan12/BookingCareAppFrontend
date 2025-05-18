@@ -147,7 +147,7 @@ const PatientBookingForm = () => {
     setLoadingStates((prev) => ({ ...prev, bookSchedule: true }));
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/booking/otp/send",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/otp/send`,
         null,
         { params: { email: formData.email } }
       );
@@ -174,7 +174,7 @@ const PatientBookingForm = () => {
     setLoadingStates((prev) => ({ ...prev, verifyOtp: true }));
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/booking/otp/verify",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/otp/verify`,
         null,
         { params: { email: formData.email, otp: formData.otp } }
       );
@@ -183,7 +183,7 @@ const PatientBookingForm = () => {
       const [scheduleId, hourId] = formData.timeSlot.split("-");
 
       await axios
-        .post("http://localhost:8080/api/v1/booking", {
+        .post(`${import.meta.env.VITE_API_URL}/api/v1/booking`, {
           scheduleId: parseInt(scheduleId),
           hourId: parseInt(hourId),
           patientId: parseInt(formData.doctorId),
@@ -218,7 +218,9 @@ const PatientBookingForm = () => {
 
   const fetchMajors = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/v1/majors");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/majors`
+      );
       setMajors(response.data.data || []);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách chuyên khoa:", error);
@@ -229,7 +231,7 @@ const PatientBookingForm = () => {
   const fetchDoctorsByMajor = async (majorId) => {
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/doctors/by-major/${majorId}`
+        `${import.meta.env.VITE_API_URL}/api/v1/doctors/by-major/${majorId}`
       );
       const doctorData = response.data.data || response.data || [];
       console.log("Doctor: " + response.data);
@@ -255,7 +257,7 @@ const PatientBookingForm = () => {
   const fetchAllDoctors = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:8080/api/v1/doctor/all"
+        `${import.meta.env.VITE_API_URL}/api/v1/doctor/all`
       );
       const doctorData = response.data.data || [];
       if (
@@ -311,7 +313,9 @@ const PatientBookingForm = () => {
       const formattedEndDate = endDate.toISOString().split("T")[0];
 
       const response = await axios.get(
-        `http://localhost:8080/api/v1/schedule/doctor/${doctorId}/available-slots`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/v1/schedule/doctor/${doctorId}/available-slots`,
         {
           params: {
             startDate: formattedStartDate,
@@ -342,7 +346,9 @@ const PatientBookingForm = () => {
       const formattedEndDate = endDate.toISOString().split("T")[0];
 
       const response = await axios.get(
-        `http://localhost:8080/api/v1/schedule/major/${majorId}/available-slots`,
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/v1/schedule/major/${majorId}/available-slots`,
         {
           params: {
             startDate: formattedStartDate,
@@ -688,7 +694,7 @@ const PatientBookingForm = () => {
     setLoadingStates((prev) => ({ ...prev, verifyPatient: true }));
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/booking/by-token/${tokenIvalid}`
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/by-token/${tokenIvalid}`
       );
       const patientData = response.data;
 

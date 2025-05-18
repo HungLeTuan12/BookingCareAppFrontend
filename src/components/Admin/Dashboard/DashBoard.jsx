@@ -47,7 +47,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:8080/api/v1/booking/stats"
+          `${import.meta.env.VITE_API_URL}/api/v1/booking/stats`
         );
         setStats(response.data);
       } catch (error) {

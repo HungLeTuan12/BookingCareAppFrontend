@@ -103,7 +103,7 @@ export default function DoctorProfile() {
       try {
         setLoading(true);
         const [doctorResponse, reviewsResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/api/v1/doctor/${id}`),
+          axios.get(`${import.meta.env.VITE_API_URL}/api/v1/doctor/${id}`),
         ]);
         const doctorData = doctorResponse.data.data;
         setDoctor(fakeDataEnhancer(doctorData));

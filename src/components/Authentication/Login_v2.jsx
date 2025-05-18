@@ -61,7 +61,7 @@ export default function MedproLoginPage() {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/v1/booking/by-token/${token}`
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/by-token/${token}`
       );
       const patientData = response.data;
       localStorage.clear();

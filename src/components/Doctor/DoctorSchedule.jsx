@@ -128,7 +128,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
       const formattedEndDate = formatDateForAPI(endDate);
 
       const response = await axios.get(
-        `http://localhost:8080/api/v1/schedule/doctor/${doctorId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/schedule/doctor/${doctorId}`,
         {
           params: {
             startDate: formattedStartDate,
@@ -160,7 +160,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
       if (searchTerm) params.searchTerm = searchTerm;
 
       const response = await axios.get(
-        `http://localhost:8080/api/v1/booking/pending/${doctorId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/pending/${doctorId}`,
         { params }
       );
       setPendingBookings(response.data || []);
@@ -183,7 +183,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
       }
 
       const response = await axios.get(
-        `http://localhost:8080/api/v1/booking/statistics/${doctorId}`,
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/statistics/${doctorId}`,
         { params }
       );
       setStatistics(response.data || {});
@@ -379,7 +379,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     setLoadingStates((prev) => ({ ...prev, deleteSchedule: true }));
     try {
       await axios.delete(
-        `http://localhost:8080/api/v1/schedule/${scheduleToDelete.id}`
+        `${import.meta.env.VITE_API_URL}/api/v1/schedule/${scheduleToDelete.id}`
       );
       toast.success("Xóa lịch thành công!");
       fetchWeeklySchedule();
@@ -402,7 +402,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     setLoadingStates((prev) => ({ ...prev, submitSchedule: true }));
     try {
       if (isEditing) {
-        await axios.put("http://localhost:8080/api/v1/schedule", {
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/v1/schedule`, {
           id: editingScheduleId,
           doctorId,
           date: selectedDate,
@@ -411,7 +411,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
         toast.success("Cập nhật lịch thành công!");
       } else {
         for (const slotId of selectedSlots) {
-          await axios.post("http://localhost:8080/api/v1/schedule", {
+          await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/schedule`, {
             doctorId,
             date: selectedDate,
             hourId: slotId,
@@ -456,7 +456,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     setLoadingStates((prev) => ({ ...prev, approveBooking: bookingId }));
     try {
       await axios.post(
-        `http://localhost:8080/api/v1/booking/approve/${bookingId}`
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/approve/${bookingId}`
       );
       toast.success("Đã gửi email xác nhận cho bệnh nhân!");
       fetchPendingBookings();
@@ -471,7 +471,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     setLoadingStates((prev) => ({ ...prev, rejectBooking: bookingId }));
     try {
       await axios.post(
-        `http://localhost:8080/api/v1/booking/reject/${bookingId}`
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/reject/${bookingId}`
       );
       toast.success("Đã từ chối lịch hẹn!");
       fetchPendingBookings();
@@ -487,7 +487,7 @@ const DoctorScheduleForm = ({ doctorId }) => {
     setMessageSendReminders("");
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/booking/reminders/send"
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/reminders/send`
       );
       setMessageSendReminders(response.data);
       toast.success(response.data);

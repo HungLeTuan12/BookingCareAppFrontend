@@ -29,7 +29,7 @@ const DoctorList = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:8080/api/v1/majors")
+      .get(`${import.meta.env.VITE_API_URL}/api/v1/majors`)
       .then((res) => setMajors(res.data.data))
       .catch((err) => console.error("Error fetching majors:", err));
   }, []);
@@ -37,15 +37,18 @@ const DoctorList = () => {
   const fetchDoctors = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8080/api/v1/doctors", {
-        params: {
-          page,
-          size,
-          majorId: majorId || undefined,
-          name: search || undefined,
-          status: status || undefined,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/doctors`,
+        {
+          params: {
+            page,
+            size,
+            majorId: majorId || undefined,
+            name: search || undefined,
+            status: status || undefined,
+          },
+        }
+      );
       setDoctors(response.data.data);
       console.log("Doctor: ", response.data.data);
 
@@ -70,7 +73,9 @@ const DoctorList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa bác sĩ này?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/v1/doctor/${id}`);
+        await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/v1/doctor/${id}`
+        );
         toast.success("Xóa thành công!");
         fetchDoctors();
       } catch (error) {

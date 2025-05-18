@@ -33,7 +33,9 @@ const Doctor = () => {
     const fetchMajors = async () => {
       try {
         setLoading((prev) => ({ ...prev, majors: true }));
-        const res = await axios.get("http://localhost:8080/api/v1/majors");
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/v1/majors`
+        );
         const majorsData = res.data.data || [];
         setMajors(majorsData);
 
@@ -41,7 +43,7 @@ const Doctor = () => {
         const counts = {};
         for (const major of majorsData) {
           const response = await axios.get(
-            "http://localhost:8080/api/v1/doctors",
+            `${import.meta.env.VITE_API_URL}/api/v1/doctors`,
             {
               params: { majorId: major.id, size: 1000 },
             }
@@ -62,15 +64,18 @@ const Doctor = () => {
   const fetchDoctors = useCallback(async () => {
     try {
       setLoading((prev) => ({ ...prev, doctors: true }));
-      const response = await axios.get("http://localhost:8080/api/v1/doctors", {
-        params: {
-          page,
-          size,
-          majorId: majorId || undefined,
-          name: search || undefined,
-          status: status || undefined,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/doctors`,
+        {
+          params: {
+            page,
+            size,
+            majorId: majorId || undefined,
+            name: search || undefined,
+            status: status || undefined,
+          },
+        }
+      );
       setDoctors(response.data.data || []);
       setTotalPages(response.data.data[0]?.totalPages || 1);
     } catch (error) {

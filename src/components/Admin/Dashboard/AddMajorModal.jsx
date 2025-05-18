@@ -40,7 +40,7 @@ const AddMajorModal = ({ isOpen, onClose, onSuccess }) => {
 
       // Send request to backend
       const response = await axios.post(
-        "http://localhost:8080/api/v1/major",
+        `${import.meta.env.VITE_API_URL}/api/v1/major`,
         formData,
         {
           headers: {

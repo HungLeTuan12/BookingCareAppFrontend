@@ -38,7 +38,7 @@ const Register = () => {
     try {
       // Replace 'YOUR_API_ENDPOINT' with your actual API endpoint
       const response = await axios.post(
-        "http://localhost:8080/auth/register",
+        `${import.meta.env.VITE_API_URL}/auth/register`,
         formData
       );
 

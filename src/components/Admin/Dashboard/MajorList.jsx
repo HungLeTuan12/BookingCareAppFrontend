@@ -16,7 +16,9 @@ const MajorList = () => {
   const fetchMajors = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8080/api/v1/majors");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/majors`
+      );
       setMajors(response.data.data);
     } catch (error) {
       console.error("Error fetching majors:", error);
@@ -47,7 +49,9 @@ const MajorList = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa chuyên khoa này?")) {
       try {
-        await axios.delete(`http://localhost:8080/api/v1/major/${id}`);
+        await axios.delete(
+          `${import.meta.env.VITE_API_URL}/api/v1/major/${id}`
+        );
         toast.success("Đã xóa thành công!");
         fetchMajors();
       } catch (error) {

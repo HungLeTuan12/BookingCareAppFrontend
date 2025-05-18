@@ -176,7 +176,7 @@ const PatientAppointmentManager = () => {
       }
 
       const response = await axios.get(
-        "http://localhost:8080/api/v1/booking/by-token-filtered",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/by-token-filtered`,
         { params }
       );
       const data = Array.isArray(response.data)
@@ -205,7 +205,7 @@ const PatientAppointmentManager = () => {
     setIsSendingOtp(true);
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/booking/cancel/otp/send",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/cancel/otp/send`,
         null,
         { params: { token } }
       );
@@ -225,7 +225,7 @@ const PatientAppointmentManager = () => {
     setIsSendingOtp(true);
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/v1/booking/cancel/otp/send",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/cancel/otp/send`,
         null,
         { params: { token: selectedCancelToken } }
       );
@@ -247,14 +247,16 @@ const PatientAppointmentManager = () => {
     setIsLoading(true);
     try {
       const verifyResponse = await axios.post(
-        "http://localhost:8080/api/v1/booking/cancel/otp/verify",
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/cancel/otp/verify`,
         null,
         { params: { token: selectedCancelToken, otp: formData.cancelOtp } }
       );
       toast.success(verifyResponse.data);
 
       const cancelResponse = await axios.delete(
-        `http://localhost:8080/api/v1/booking/cancel/${selectedCancelToken}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/v1/booking/cancel/${selectedCancelToken}`
       );
       toast.success(cancelResponse.data || "Hủy lịch hẹn thành công!");
 
@@ -286,7 +288,7 @@ const PatientAppointmentManager = () => {
     setIsLoading(true);
     try {
       const response = await axios.delete(
-        `http://localhost:8080/api/v1/booking/cancel/${token}`
+        `${import.meta.env.VITE_API_URL}/api/v1/booking/cancel/${token}`
       );
       toast.success(response.data || "Hủy lịch hẹn thành công!");
 
@@ -307,7 +309,9 @@ const PatientAppointmentManager = () => {
   const updateStatusToSuccess = async (token) => {
     try {
       const response = await axios.put(
-        `http://localhost:8080/api/v1/booking/set-status-success/${token}`
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/v1/booking/set-status-success/${token}`
       );
       toast.success(response.data || "Cập nhật trạng thái thành công!");
       fetchAppointmentsByToken(patientToken);
