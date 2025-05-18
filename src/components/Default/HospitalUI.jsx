@@ -203,7 +203,7 @@ const HospitalUI = () => {
       <Navigation />
       <div className="section relative w-full h-screen flex items-center justify-center">
         <img
-          src="src/assets/img/banner/26.3_cover(1920x626).5b4c0be4.jpg"
+          src="../src/assets/img/banner/26.3_cover(1920x626).5b4c0be4.jpg"
           alt="Event Banner"
           className="w-full h-full object-cover"
           onError={(e) =>
