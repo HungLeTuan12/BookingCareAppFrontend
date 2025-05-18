@@ -253,7 +253,7 @@ const Login = () => {
           <div className="h-full relative">
             <div className="h-full w-full bg-cover bg-center bg-no-repeat">
               <img
-                src="src/assets/img/banner/banner.jpg"
+                src="https://id.medpro.vn/static/media/cover-14.cdc08a1d.jpg"
                 alt="Woman using mobile app"
                 className="h-full w-full object-cover"
               />
